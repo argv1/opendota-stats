@@ -1,0 +1,9 @@
+1 Carry
+2 Nuker
+3 Initator
+4 Disabler
+5 Durable
+6 Escape
+7 Support
+8 Pusher
+9 Jungler

@@ -1,0 +1,10 @@
+0 normal
+1 practice
+2 tournament
+3 tutorial
+4 coop_bots
+5 ranked_team_mm
+6 ranked_solo_mm
+7 ranked
+8 1v1_mid
+9 battle_cup
