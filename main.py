@@ -17,6 +17,7 @@ import os.path
 import pandas as pd
 from   pathlib import Path
 import requests
+import time
 
 def get_matches(player_Ids):
     '''
@@ -31,8 +32,7 @@ def get_matches(player_Ids):
     lobby_types_f = base_path / 'data\lobby_type.txt'
     match_f = player_Ids[0]
 
-    # 0 = including turbo, 1 = without
-    url = f"https://api.opendota.com/api/players/{player_Ids[0]}/matches?significant=0"
+    # Filename based on provided player_id(s)
     if(len(player_Ids) > 1):
         for entry in range(1,len(player_Ids)):
             url += f"&included_account_id={player_Ids[entry]}"
@@ -48,13 +48,25 @@ def get_matches(player_Ids):
     df = pd.read_csv(match_f)
     match_ids = pd.Series(df.match_id)
     
-    # start request
-    resp = requests.get(url=url)
-    data = resp.json()
-    
-    # store every new match in the dataframe
-    df = pd.DataFrame.from_records(data)
-    
+    for n in range(0,2):
+        # 0 = including turbo, 1 = without  #&win=0 lost
+        url = f"https://api.opendota.com/api/players/{player_Ids[0]}/matches?significant=0&win={n}" 
+
+        # start request
+        resp = requests.get(url=url)
+        data = resp.json()
+        
+        if n == 0:
+            # store every new match in the dataframe
+            df = pd.DataFrame.from_records(data)
+            df['won'] = "Lost"
+            # politely wait
+            time.sleep(3)
+        else:
+            df1 = pd.DataFrame.from_records(data)
+            df1['won'] = "Won"
+            df = pd.concat([df, df1])
+
     # check for duplicate matches
     df.drop_duplicates(subset='match_id',inplace=True)
 
@@ -79,7 +91,6 @@ def get_matches(player_Ids):
 
     # Add additional informations
     df['factions'] = np.where(np.greater_equal(df.player_slot,128), "Dire", "Radiant")
-    df['won'] = np.where(np.logical_or(np.logical_and(np.greater_equal(df.player_slot,128),np.equal(df.radiant_win,False)),np.logical_and(np.less(df.player_slot,128),np.equal(df.radiant_win,True))), "Won", "Lost")
     df['KD'] = np.where(np.greater(df.deaths,0),df.kills / df.deaths, df.kills)
     df['KDA'] = np.where(np.greater(df.deaths,0),(df.kills + df.assists) / df.deaths, df.kills + df.assists)
 
