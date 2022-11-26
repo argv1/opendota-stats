@@ -23,12 +23,16 @@ def main():
     data = resp.json()
 
     df = pd.DataFrame.from_records(data)
+    df_full = df.copy()
     df = df[["id", "localized_name"]]
 
-    # write new dataframe to csv
+    # write new dataframe to txt
     with open("hero_ids.txt", "w") as f:
         dfAsString = df.to_string(header=False, index=False)
         f.write(dfAsString)
+
+    # write new dataframe to csv
+    df_full.to_csv("hero_lore.csv", index=False)
 
 if __name__ == '__main__':
     main()
